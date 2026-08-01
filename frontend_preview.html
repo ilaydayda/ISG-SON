@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akıllı İSG Karar Destek ve Risk Analiz Sistemi</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(17, 24, 39, 0.85);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #6366f1;
+            --cyan: #06b6d4;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(6, 182, 212, 0.06) 0%, transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        header {
+            background: rgba(11, 15, 25, 0.95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand h1 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand p { font-size: 0.8rem; color: var(--text-muted); }
+
+        .status-tag {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+            padding: 0.45rem 1.1rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        /* MAIN LAYOUT */
+        main {
+            max-width: 1500px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 1.5rem;
+            flex: 1;
+        }
+
+        .card-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* STREAMLIT TABS */
+        .tab-bar {
+            display: flex;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+        }
+
+        .tab-item {
+            flex: 1;
+            padding: 0.65rem 0.5rem;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+
+        .tab-item.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* SELECT FIELD */
+        .select-field {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            margin-bottom: 1.25rem;
+            outline: none;
+        }
+
+        /* DROPZONE */
+        .dropzone {
+            border: 2px dashed rgba(99, 102, 241, 0.35);
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dropzone:hover {
+            border-color: var(--cyan);
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        /* CAMERA GUIDE OVERLAY FRAME */
+        .camera-guide-box {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px dashed var(--cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scanner-frame {
+            position: absolute;
+            width: 210px;
+            height: 105px;
+            border: 2px solid var(--cyan);
+            border-radius: 8px;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scanner-laser {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan);
+            animation: scan 2s infinite ease-in-out;
+        }
+
+        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+
+        /* CUMULATIVE POOL GRID */
+        .pool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 0.85rem;
+            min-height: 180px;
+            margin-bottom: 1.5rem;
+        }
+
+        .pool-item {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .pool-item img {
+            width: 100%;
+            height: 95px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .pool-item p {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-delete-item {
+            margin-top: 0.3rem;
+            width: 100%;
+            padding: 0.25rem;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-delete-item:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: white;
+        }
+
+        .btn-analyze-batch {
+            width: 100%;
+            padding: 1.1rem;
+            background: linear-gradient(135deg, var(--primary), var(--cyan));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+            transition: all 0.2s;
+        }
+
+        .btn-analyze-batch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6);
+        }
+
+        /* RESULTS & DYNAMIC DATA EDITOR SIMULATION */
+        .results-box {
+            margin-top: 1.5rem;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 14px;
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.75rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
+
+        td input {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.3rem 0.5rem;
+            border-radius: 6px;
+            width: 90%;
+            font-size: 0.82rem;
+        }
+
+        td input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .btn-excel-download {
+            margin-top: 1.25rem;
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="brand">
+            <h1>🛡️ Akıllı İSG Karar Destek ve Risk Analiz Sistemi</h1>
+            <p>Laboratuvar Kimyasal Şişeleri Görsel Okuma & Fine Kinney Risk Analiz Portalı</p>
+        </div>
+        <div class="status-tag">
+            ● Sistem Hazır (Hash Korumalı & Düzenlenebilir Tablo)
+        </div>
+    </header>
+
+    <main>
+        <!-- SOL PANEL -->
+        <section class="card-box">
+            <div class="section-title">
+                <i class="fa-solid fa-sliders text-indigo"></i> Kontrol & Ayarlar
+            </div>
+
+            <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted); margin-bottom:0.4rem; display:block;">Laboratuvar Türü (Frekans - F):</label>
+            <select id="labTypeSelect" class="select-field">
+                <option value="1">Depo (Seyrek Kullanım - F: 1)</option>
+                <option value="3" selected>Ar-Ge Laboratuvarı (Haftalık - F: 3)</option>
+                <option value="6">Öğrenci Laboratuvarı (Günlük - F: 6)</option>
+                <option value="10">Üretim / Kalite Kontrol (Sürekli - F: 10)</option>
+            </select>
+
+            <div class="tab-bar">
+                <button class="tab-item active" id="tabUploadBtn" onclick="switchTab('upload')">
+                    <i class="fa-solid fa-folder-open"></i> Dosyadan Yükle
+                </button>
+                <button class="tab-item" id="tabCameraBtn" onclick="switchTab('camera')">
+                    <i class="fa-solid fa-camera"></i> Canlı Kamera
+                </button>
+            </div>
+
+            <div id="tabUploadContent">
+                <div class="dropzone" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept="image/*" multiple style="display:none;" onchange="handleMultipleFiles(event)">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: var(--cyan);"></i>
+                    <span style="font-size: 0.85rem; font-weight: 600;">Birden Fazla Dosya Seçin</span>
+                    <span style="font-size: 0.72rem; color: var(--text-dim);">Fotoğraflarınız klonlanmadan havuza eklenir</span>
+                </div>
+            </div>
+
+            <div id="tabCameraContent" style="display: none;">
+                <div class="camera-guide-box">
+                    <video id="webcamFeed" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+                    <div class="scanner-frame">
+                        <div class="scanner-laser"></div>
+                    </div>
+                </div>
+                <button class="tab-item active" style="margin-top:0.75rem; width:100%; justify-content:center;" onclick="snapCameraToPool()">
+                    <i class="fa-solid fa-camera-retro"></i> Fotoğraf Çek ve Havuza Ekle
+                </button>
+            </div>
+        </section>
+
+        <!-- ORTA/SAĞ PANEL -->
+        <section class="card-box">
+            <div class="section-title" style="justify-content: space-between;">
+                <span><i class="fa-solid fa-layer-group text-cyan"></i> Kümülatif Fotoğraf Havuzu (Listelenen Şişeler)</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);" id="poolCounter">0 Adet Şişe</span>
+            </div>
+
+            <div class="pool-grid" id="poolGrid">
+                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-dim); padding: 3rem 1rem;" id="emptyPoolMsg">
+                    <i class="fa-regular fa-folder-open" style="font-size: 3rem; margin-bottom: 0.5rem; opacity: 0.3;"></i>
+                    <p>Havuzda henüz fotoğraf yok. Sol taraftaki sekmelerden fotoğraf ekleyin.</p>
+                </div>
+            </div>
+
+            <button class="btn-analyze-batch" id="btnRunBatch" onclick="runBatchAnalysis()" disabled>
+                <i class="fa-solid fa-rocket"></i>
+                <span>Toplu Risk Analizini Başlat</span>
+            </button>
+
+            <!-- DÜZENLENEN DÜZENLENEBİLİR TABLO VE EXCEL ÇIKTISI (st.data_editor SİMÜLASYONU) -->
+            <div class="results-box" id="resultsSection" style="display: none;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight: 700; font-size:0.95rem;">📝 Düzenlenebilir Fine Kinney Risk Analizi Tablosu (st.data_editor)</span>
+                    <span style="color:#34d399; font-weight:700; font-size:0.8rem;">● Değerler Düzenlenebilir</span>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">💡 Hücrelerdeki değerleri tıklayıp değiştirebilirsiniz. Skorlar ve dereceler otomatik güncellenir.</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sıra No</th>
+                            <th>Fotoğraf Adı</th>
+                            <th>CAS Numarası</th>
+                            <th>H Kodları</th>
+                            <th>Olasılık (O)</th>
+                            <th>Şiddet (S)</th>
+                            <th>Frekans (F)</th>
+                            <th>Fine Kinney Skoru</th>
+                            <th>Risk Derecesi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody"></tbody>
+                </table>
+
+                <button class="btn-excel-download" onclick="downloadExcelReport()">
+                    <i class="fa-solid fa-file-excel"></i>
+                    <span>Düzenlenmiş Fine Kinney Excel Raporunu İndir (.xlsx)</span>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let photoPool = [];
+
+        async function switchTab(tab) {
+            document.getElementById('tabUploadBtn').classList.toggle('active', tab === 'upload');
+            document.getElementById('tabCameraBtn').classList.toggle('active', tab === 'camera');
+
+            document.getElementById('tabUploadContent').style.display = (tab === 'upload') ? 'block' : 'none';
+            document.getElementById('tabCameraContent').style.display = (tab === 'camera') ? 'block' : 'none';
+
+            if (tab === 'camera') {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    document.getElementById('webcamFeed').srcObject = stream;
+                } catch(e) { console.warn("Kamera erişimi sağlanamadı:", e); }
+            }
+        }
+
+        function handleMultipleFiles(e) {
+            const files = e.target.files;
+            for (let f of files) {
+                const url = URL.createObjectURL(f);
+                photoPool.push({ id: Date.now() + Math.random(), name: f.name, url: url, source: 'Dosya' });
+            }
+            renderPool();
+        }
+
+        function snapCameraToPool() {
+            const mockUrl = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150"><rect width="100%" height="100%" fill="%230f172a"/><text x="100" y="80" fill="%2306b6d4" font-weight="bold" font-size="14" text-anchor="middle">Kamera Çekimi</text></svg>`;
+            photoPool.push({
+                id: Date.now() + Math.random(),
+                name: `Kamera_Cekim_${photoPool.length + 1}.jpg`,
+                url: mockUrl,
+                source: 'Kamera'
+            });
+            renderPool();
+        }
+
+        function removeFromPool(id) {
+            photoPool = photoPool.filter(item => item.id !== id);
+            renderPool();
+        }
+
+        function renderPool() {
+            const grid = document.getElementById('poolGrid');
+            const emptyMsg = document.getElementById('emptyPoolMsg');
+            const btnRun = document.getElementById('btnRunBatch');
+            const counter = document.getElementById('poolCounter');
+
+            counter.innerText = `${photoPool.length} Adet Şişe`;
+
+            if (photoPool.length > 0) {
+                emptyMsg.style.display = 'none';
+                btnRun.disabled = false;
+            } else {
+                emptyMsg.style.display = 'block';
+                btnRun.disabled = true;
+            }
+
+            grid.innerHTML = photoPool.map(item => `
+                <div class="pool-item">
+                    <img src="${item.url}" alt="${item.name}">
+                    <p title="${item.name}">${item.name}</p>
+                    <button class="btn-delete-item" onclick="removeFromPool(${item.id})">
+                        <i class="fa-solid fa-trash me-1"></i> Sil
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function runBatchAnalysis() {
+            const section = document.getElementById('resultsSection');
+            const tbody = document.getElementById('resultsTableBody');
+            const F = parseFloat(document.getElementById('labTypeSelect').value);
+
+            const mockDb = [
+                { cas: '67-64-1', h: 'H225, H319', s: 15 },
+                { cas: '7664-93-9', h: 'H314, H290', s: 40 },
+                { cas: '67-56-1', h: 'H225, H301, H370', s: 40 }
+            ];
+
+            tbody.innerHTML = photoPool.map((item, idx) => {
+                const sample = mockDb[idx % mockDb.length];
+                const O = 6;
+                const score = O * sample.s * F;
+                let deg = 'Dikkate Değer Risk';
+                if (score >= 400) deg = 'Çok Yüksek Risk';
+                else if (score >= 200) deg = 'Yüksek Risk';
+                else if (score >= 70) deg = 'Önemli Risk';
+
+                return `
+                    <tr>
+                        <td>#${idx + 1}</td>
+                        <td style="font-weight:600;">${item.name}</td>
+                        <td><input type="text" value="${sample.cas}"></td>
+                        <td><input type="text" value="${sample.h}"></td>
+                        <td><input type="number" value="${O}" onchange="recalcRow(this)"></td>
+                        <td><input type="number" value="${sample.s}" onchange="recalcRow(this)"></td>
+                        <td><input type="number" value="${F}" onchange="recalcRow(this)"></td>
+                        <td class="row-score" style="font-weight:bold;">${score}</td>
+                        <td class="row-deg" style="color:#34d399; font-weight:bold;">${deg}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            section.style.display = 'block';
+        }
+
+        function recalcRow(inputElem) {
+            const tr = inputElem.closest('tr');
+            const inputs = tr.querySelectorAll('input');
+            const O = parseFloat(inputs[2].value) || 0;
+            const S = parseFloat(inputs[3].value) || 0;
+            const F = parseFloat(inputs[4].value) || 0;
+            const score = O * S * F;
+
+            tr.querySelector('.row-score').innerText = score;
+            let deg = 'Kabul Edilebilir Risk';
+            if (score >= 400) deg = 'Çok Yüksek Risk';
+            else if (score >= 200) deg = 'Yüksek Risk';
+            else if (score >= 70) deg = 'Önemli Risk';
+            else if (score >= 20) deg = 'Dikkate Değer Risk';
+
+            tr.querySelector('.row-deg').innerText = deg;
+        }
+
+        function downloadExcelReport() {
+            alert("Düzenlenmiş Fine Kinney Excel Raporu (.xlsx) başarıyla indirildi!");
+        }
+    </script>
+</body>
+</html>

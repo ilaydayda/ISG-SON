@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# Editor / OS
+.vscode/
+.idea/
+.claude/
+.DS_Store
+
+# Local logs / temp
+*.log
+*.sqlite3
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Large/local project data (comment out if you want to track them)
+denemegoruntuleri/
+kaynak_msds/

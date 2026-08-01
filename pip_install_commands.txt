@@ -1,0 +1,1 @@
+pip install streamlit pillow pandas pillow-heif pymupdf deep-translator pymongo certifi opencv-python numpy easyocr
