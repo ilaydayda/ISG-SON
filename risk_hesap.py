@@ -1,6 +1,7 @@
 """Fine Kinney risk hesaplama katmanı: H kodundan Şiddet puanı çıkarma,
 skor (Olasılık x Şiddet x Frekans) ve Risk Derecesi hesaplama, güvenli
 sayısal dönüşüm."""
+import re
 
 # Standard H-code Severity Mapping Rule (MAX Rule Engine)
 H_SEVERITY_MAP = {
@@ -12,8 +13,13 @@ H_SEVERITY_MAP = {
 
 
 def calculate_max_severity(h_codes_list):
-    """En Kötü Senaryo (MAX) Kuralına göre Şiddet (S) puanı hesaplar"""
-    severities = [H_SEVERITY_MAP.get(code.strip(), 15) for code in h_codes_list if code.strip()]
+    """En Kötü Senaryo (MAX) Kuralına göre Şiddet (S) puanı hesaplar.
+    Birleşik kodlar (örn. 'H301+H311+H331') ve harf ekli varyantlar
+    (örn. 'H360FD', 'H350i') temel kodlarına ayrılarak tek tek değerlendirilir."""
+    severities = []
+    for code in h_codes_list:
+        for temel_kod in re.findall(r"H\d{3}", str(code).upper()):
+            severities.append(H_SEVERITY_MAP.get(temel_kod, 15))
     return max(severities) if severities else 15
 
 
