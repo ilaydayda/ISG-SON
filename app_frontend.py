@@ -559,6 +559,9 @@ if "cas_report" not in st.session_state:
 if "msds_cache" not in st.session_state:
     st.session_state.msds_cache = {}
 
+# Rapor indirme öncesi çevre bilinçlendirme ekranını kontrol etmek için
+if "show_report_warning" not in st.session_state:
+    st.session_state.show_report_warning = False
 # ==============================================================================
 # 4. HEADER (ÜST BİLGİ ALANI VE MONGODB BAĞLANTI DURUMU)
 # ==============================================================================
@@ -643,7 +646,7 @@ aktif_sekme = st.radio(
 # --- TAB 1: ÇOKLU DOSYA YÜKLEME ---
 if aktif_sekme == SEKMELER[0]:
     uploaded_files = st.file_uploader(
-        "Birden fazla şişe/etiket fotoğrafı seçin (Yüklenen fotoğraflar klonlanmadan havuza eklenir):",
+        "Birden fazla şişe/etiket fotoğrafı seçin:",
         type=["jpg", "png", "jpeg", "heic"],
         accept_multiple_files=True,
         key="file_uploader_widget"
@@ -690,7 +693,7 @@ if aktif_sekme == SEKMELER[1]:
     </div>
     """, unsafe_allow_html=True)
 
-    cam_snap = st.camera_input("Fotoğraf Çekin (Klonlama yapılmadan çekimler havuza eklenir):", key="camera_input_widget")
+    cam_snap = st.camera_input("Fotoğraf Çekin:", key="camera_input_widget")
 
     if cam_snap:
         cam_bytes = cam_snap.getvalue()
@@ -924,9 +927,9 @@ col_action_btn, _ = st.columns([2, 1])
 
 with col_action_btn:
     if len(st.session_state.photo_pool) > 0:
-        btn_start_batch = st.button("🚀 Toplu Risk Analizini Başlat (MongoDB Atlas)", type="primary", use_container_width=True)
+        btn_start_batch = st.button("🚀 Toplu Risk Analizini Başlat ", type="primary", use_container_width=True)
     else:
-        btn_start_batch = st.button("🚀 Toplu Risk Analizini Başlat (MongoDB Atlas)", disabled=True, use_container_width=True)
+        btn_start_batch = st.button("🚀 Toplu Risk Analizini Başlat ", disabled=True, use_container_width=True)
 
 if btn_start_batch and st.session_state.photo_pool:
     with st.spinner("🔍 MongoDB Atlas veritabanından CAS Numaraları ve MSDS kayıtları çekiliyor..."):
@@ -958,7 +961,7 @@ if btn_start_batch and st.session_state.photo_pool:
 # DISPLAY EDITABLE TABLE & DOWNLOAD IF ANALYSIS HAS BEEN RUN
 if st.session_state.analysis_df is not None and not st.session_state.analysis_df.empty:
     st.markdown("""<div class="editor-container-box">""", unsafe_allow_html=True)
-    st.subheader("📝 Düzenlenebilir Fine Kinney Risk Analizi Tablosu (MongoDB Atlas Entegreli)")
+    st.subheader("📝 Düzenlenebilir Fine Kinney Risk Analizi Tablosu")
     st.caption("💡 İpucu: Tablodaki tüm değerlere (CAS No, Kimyasal Adı, O, S, F) tıklayarak manuel değişiklikler yapabilirsiniz. Skorlar ve risk dereceleri otomatik güncellenir.")
 
     # STREAMLIT DYNAMIC INTERACTIVE DATA EDITOR (st.data_editor)
@@ -1011,13 +1014,39 @@ if st.session_state.analysis_df is not None and not st.session_state.analysis_df
         })
 
     st.markdown("<br>", unsafe_allow_html=True)
+# ==============================================================================
+    # 🌍 ÇEVRE BİLİNÇLENDİRME VE ONAY EKRANI
+    # ==============================================================================
+    if not st.session_state.show_report_warning:
+        # Kullanıcı henüz onaya basmadıysa sadece Rapor Oluştur butonunu göster
+        if st.button("📊 Nihai Raporu Oluştur", type="primary", use_container_width=True):
+            st.session_state.show_report_warning = True
+            st.rerun()
+    else:
+        # Butona basıldıysa Uyarı ve Onay Ekranını Göster
+        st.markdown("""
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.4); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <h3 style="color: #34d399; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                🌍 Doğayı ve Geleceği Korumak Elimizde
+            </h3>
+            <p style="color: #e2e8f0; font-size: 0.95rem; line-height: 1.6; margin-bottom: 0;">
+                Risk analiziniz tamamlandı ve raporunuz oluşturulmak üzere. Lütfen unutmayın: Kimyasalların güvenli kullanımı sadece laboratuvarı değil, dünyamızı da korur. Hatalı bertaraf edilen her kimyasal, ekosistemde geri dönüşü olmayan izler bırakır. Atıklarınızı uygun İSG ve Çevre prosedürlerine göre yönettiğinizden emin olun.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    # Download Button for the updated edited DataFrame
-    st.download_button(
-        label="📊 Fine Kinney Risk Analizi Tablosunu İndir (.xlsx)",
-        data=fine_kinney_excel(excel_satirlari),
-        file_name="Fine_Kinney_Toplu_Risk_Analizi.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        use_container_width=True,
-        type="primary"
-    )
+        # Yan yana iki buton: Raporu İndir (Vurgulu) ve Geri Dön (Gri)
+        col_btn1, col_btn2 = st.columns(2)
+        
+        with col_btn1:
+            # Excel'i İndiren Ana Buton
+            st.download_button(
+                label="✅ Raporu Oluştur ve Çık",
+                data=fine_kinney_excel(excel_satirlari),
+                file_name="Fine_Kinney_Toplu_Risk_Analizi.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+                type="primary"
+            )
+            
+    
