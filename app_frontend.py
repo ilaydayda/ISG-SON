@@ -35,22 +35,20 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Dark Corporate Theme CSS
+# Adaptive Theme CSS (hem açık hem koyu temada çalışır)
 st.markdown("""
 <style>
     .stApp {
-        background-color: #090d16;
         background-image:
-            radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-            radial-gradient(circle at 90% 90%, rgba(6, 182, 212, 0.06) 0%, transparent 40%);
-        color: #f8fafc;
+            radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
+            radial-gradient(circle at 90% 90%, rgba(6, 182, 212, 0.04) 0%, transparent 40%);
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     /* Executive Header */
     .executive-header {
-        background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--secondary-background-color);
+        border: 1px solid rgba(99, 102, 241, 0.25);
         backdrop-filter: blur(16px);
         padding: 1.25rem 2rem;
         border-radius: 16px;
@@ -58,54 +56,54 @@ st.markdown("""
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     .header-title-text {
         font-size: 1.45rem;
         font-weight: 800;
-        background: linear-gradient(to right, #ffffff, #cbd5e1);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text-color);
         margin: 0;
     }
     .header-subtitle-text {
         font-size: 0.82rem;
-        color: #94a3b8;
+        color: var(--text-color);
+        opacity: 0.55;
         margin-top: 0.2rem;
     }
 
     /* Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
-        background-color: rgba(15, 23, 42, 0.7);
+        background-color: var(--secondary-background-color);
         padding: 6px;
         border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(99, 102, 241, 0.2);
     }
     .stTabs [data-baseweb="tab"] {
         height: 46px;
         border-radius: 8px;
-        color: #94a3b8;
+        color: var(--text-color);
         font-weight: 600;
         font-size: 0.88rem;
         background-color: transparent;
         border: none;
+        opacity: 0.65;
     }
     .stTabs [aria-selected="true"] {
         background-color: #6366f1 !important;
         color: #ffffff !important;
         box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        opacity: 1 !important;
     }
 
     /* Scanner Viewfinder Box */
     .scanner-viewfinder-box {
         border: 2px dashed #06b6d4;
         border-radius: 14px;
-        background: rgba(6, 182, 212, 0.04);
+        background: rgba(6, 182, 212, 0.05);
         padding: 0.85rem;
         text-align: center;
         margin-bottom: 1rem;
-        box-shadow: inset 0 0 20px rgba(6, 182, 212, 0.08);
     }
     .scanner-guide-label {
         color: #06b6d4;
@@ -117,32 +115,33 @@ st.markdown("""
 
     /* Results Editor Container */
     .editor-container-box {
-        background: rgba(15, 23, 42, 0.85);
+        background: var(--secondary-background-color);
         border: 1px solid rgba(99, 102, 241, 0.3);
         border-radius: 16px;
         padding: 1.5rem;
         margin-top: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
 
     /* CAS Rapor Kartı */
     .cas-report-card {
-        background: rgba(15, 23, 42, 0.85);
+        background: var(--secondary-background-color);
         border: 1px solid rgba(99, 102, 241, 0.3);
         border-radius: 16px;
         padding: 1.25rem 1.5rem;
         margin: 1rem 0;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
     .cas-report-title {
         font-size: 1.2rem;
         font-weight: 800;
-        color: #ffffff;
+        color: var(--text-color);
         margin: 0;
     }
     .cas-report-sub {
         font-size: 0.82rem;
-        color: #94a3b8;
+        color: var(--text-color);
+        opacity: 0.55;
         margin-top: 0.25rem;
     }
     .cas-risk-badge {
@@ -154,7 +153,7 @@ st.markdown("""
         font-size: 0.9rem;
         background: rgba(99, 102, 241, 0.15);
         border: 1px solid rgba(99, 102, 241, 0.45);
-        color: #c7d2fe;
+        color: #6366f1;
     }
 
     /* Havuzdaki manuel CAS girişi kartı (fotoğraf yerine) */
@@ -162,7 +161,7 @@ st.markdown("""
         height: 170px;
         border: 2px dashed #6366f1;
         border-radius: 12px;
-        background: rgba(99, 102, 241, 0.08);
+        background: rgba(99, 102, 241, 0.05);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -171,16 +170,16 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
     .manual-cas-card .ikon { font-size: 2.2rem; }
-    .manual-cas-card .cas { font-family: monospace; font-weight: 800; font-size: 1.05rem; color: #c7d2fe; }
-    .manual-cas-card .etiket { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+    .manual-cas-card .cas { font-family: monospace; font-weight: 800; font-size: 1.05rem; color: #6366f1; }
+    .manual-cas-card .etiket { font-size: 0.75rem; color: var(--text-color); opacity: 0.5; text-transform: uppercase; letter-spacing: 0.04em; }
 
     /* Sekme görünümlü seçim çubuğu */
     div[role="radiogroup"] {
         gap: 8px;
-        background-color: rgba(15, 23, 42, 0.7);
+        background-color: var(--secondary-background-color);
         padding: 6px;
         border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(99, 102, 241, 0.2);
     }
     div[role="radiogroup"] > label {
         padding: 0.55rem 1rem;
