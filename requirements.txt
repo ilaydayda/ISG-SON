@@ -4,9 +4,8 @@ openpyxl
 pillow
 pillow-heif
 pymongo
+dnspython
 certifi
-easyocr
-opencv-python-headless
 numpy
 pymupdf
 deep-translator

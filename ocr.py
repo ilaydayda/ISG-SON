@@ -6,9 +6,16 @@ sık OCR hatalarını (l->1, O->0, eksik tire) düzeltir. Bulduğu her aday,
 kesin kabulden önce katı CAS regex'inden geçirilir; hiçbir zaman rastgele/
 uydurma bir değer üretmez."""
 import re
+import importlib.util
 import numpy as np
-import cv2
-import easyocr
+
+# OCR paketleri opsiyonel: bulut (Streamlit Cloud) sürümünde kurulu değiller.
+# Yoksa uygulama çökmez, sadece fotoğraftan okuma devre dışı kalır.
+try:
+    import cv2
+except Exception:
+    cv2 = None
+OCR_AVAILABLE = cv2 is not None and importlib.util.find_spec("easyocr") is not None
 
 CAS_REGEX = re.compile(r'^\d{2,7}-\d{2}-\d$')
 CAS_SEARCH_REGEX = re.compile(r'\d{2,7}-\d{2}-\d')
@@ -23,6 +30,9 @@ def create_reader():
     """Yeni bir EasyOCR Reader nesnesi oluşturur (ağır/yavaş bir işlem).
     Çağıran taraf (örn. Streamlit'te st.cache_resource) bunu önbelleğe almalı,
     her fotoğraf için yeniden oluşturmamalı."""
+    if not OCR_AVAILABLE:
+        return None
+    import easyocr  # Geç import: uygulama başlarken PyTorch yüklemesini önler
     return easyocr.Reader(['en'], gpu=False)
 
 
@@ -58,6 +68,8 @@ def extract_cas_from_image(pil_image, reader):
 
     reader: create_reader() ile oluşturulmuş (ve çağıran tarafça önbelleklenmiş)
     bir easyocr.Reader nesnesi."""
+    if not OCR_AVAILABLE or reader is None:
+        return None
     try:
         img_array = np.array(pil_image.convert('RGB'))
         img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)

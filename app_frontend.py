@@ -197,9 +197,20 @@ st.markdown("""
 # 2. ÖNBELLEKLİ KAYNAKLAR (MongoDB bağlantısı & EasyOCR modeli)
 # ==============================================================================
 @st.cache_resource
+def _cached_mongo_collection():
+    coll = db.get_collection()
+    if coll is None:
+        # Başarısız bağlantıyı önbelleğe alma; bir sonraki denemede tekrar bağlanılsın
+        raise ConnectionError(db.last_error or "MongoDB bağlantısı kurulamadı")
+    return coll
+
 def get_mongo_collection():
-    """MongoDB Atlas bağlantısını Streamlit oturumu boyunca önbellekte tutar."""
-    return db.get_collection()
+    """MongoDB Atlas bağlantısını Streamlit oturumu boyunca önbellekte tutar.
+    Sadece BAŞARILI bağlantı önbelleğe alınır; hata olursa None döner."""
+    try:
+        return _cached_mongo_collection()
+    except ConnectionError:
+        return None
 
 @st.cache_resource
 def get_ocr_reader():
@@ -567,6 +578,11 @@ if "show_report_warning" not in st.session_state:
 mongo_collection = get_mongo_collection()
 db_status_color = "#34d399" if mongo_collection is not None else "#fbbf24"
 db_status_text = "● MongoDB Atlas Bağlandı" if mongo_collection is not None else "● MongoDB Çevrimdışı (Lokal Mod)"
+if mongo_collection is None and db.last_error:
+    with st.expander("⚠️ MongoDB bağlantı hatası detayı"):
+        st.code(db.last_error)
+        if st.button("🔄 Tekrar Bağlan"):
+            st.rerun()
 
 st.markdown(f"""
 <div class="executive-header">
@@ -641,6 +657,9 @@ aktif_sekme = st.radio(
     key="aktif_sekme",
     label_visibility="collapsed"
 )
+
+if not ocr.OCR_AVAILABLE:
+    st.warning("📷 Fotoğraftan otomatik CAS okuma bu sürümde kapalı (sadece yerel sürümde çalışır). CAS numarasını elle girebilirsiniz.")
 
 # --- TAB 1: ÇOKLU DOSYA YÜKLEME ---
 if aktif_sekme == SEKMELER[0]:

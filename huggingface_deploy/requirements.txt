@@ -1,0 +1,12 @@
+streamlit>=1.40,<2
+pandas
+openpyxl
+pillow
+pillow-heif
+pymongo
+certifi
+easyocr
+opencv-python-headless
+numpy
+pymupdf
+deep-translator
